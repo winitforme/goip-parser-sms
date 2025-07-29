@@ -1,0 +1,24 @@
+version: '3.5'
+
+services:
+  goip-sms-receiver:
+    build: .
+    env_file:
+      - .env_goip
+    restart: always
+    volumes:
+      - ./app:/app
+    depends_on:
+      - psql
+    entrypoint: ["/app/wait-for-it.sh", "psql:5432", "--timeout=60", "--strict", "--", "python", "-u", "main.py"]
+
+  psql:
+    image: postgres:latest
+    restart: always
+    env_file:
+      - .env_psql
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
