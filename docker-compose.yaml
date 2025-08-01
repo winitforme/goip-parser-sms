@@ -10,7 +10,7 @@ services:
       - ./app:/app
     depends_on:
       - psql
-    entrypoint: ["/app/wait-for-it.sh", "psql:5432", "--timeout=60", "--strict", "--", "python", "-u", "main.py"]
+    command: ["python", "-u", "main.py"]
 
   psql:
     image: postgres:latest
