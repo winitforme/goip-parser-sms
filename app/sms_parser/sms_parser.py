@@ -1,6 +1,8 @@
 import base64
 import requests
 import re
+import csv
+
 
 class GoipGateway:
     def __init__(self, goip_addr, goip_user, goip_password):
@@ -30,27 +32,27 @@ class GoipGateway:
         except UnicodeDecodeError:
             data = response.content.decode('latin1')
 
-        data = data.replace('\\"', '"')
-        sms_dump_arr = re.findall(r'sms= \[(.*?)\]', data, re.IGNORECASE | re.DOTALL)
+        all_messages = [[] for _ in range(32)]  # по числу каналов
+        pattern = re.compile(r'sms= \[(.*?)\];\s*sms_row_insert\(.*?,\s*pos,\s*(\d+)\);', re.DOTALL)
 
-        all_messages = []
+        for match in pattern.finditer(data):
+            raw_sms, port_str = match.groups()
+            port_index = int(port_str) - 1
 
-        for sim_index, sim_raw in enumerate(sms_dump_arr):
-            sim_messages = []
-            items = [x.strip("'") for x in re.findall(r"'(.*?)'", sim_raw)]
+            if not raw_sms.strip():
+                continue
 
-            # Разбиваем на блоки по 3 (дата, отправитель, текст)
-            for i in range(0, len(items) - 2, 3):
-                date = items[i]
-                sender = items[i + 1]
-                text = items[i + 2]
-                sim_messages.append({
-                    'date': date,
-                    'from': sender,
-                    'text': text,
-                    'line': i + 1
-                })
+            # Сплит по ", но с учётом, что текст может содержать запятые
+            split_sms = re.findall(r'"(.*?)"', raw_sms)
 
-            all_messages.append(sim_messages)
+            for msg in split_sms:
+                parts = msg.split(",", 2)  # date, from, text
+                if len(parts) == 3:
+                    all_messages[port_index].append({
+                        'date': parts[0].strip(),
+                        'from': parts[1].strip(),
+                        'text': parts[2].strip(),
+                        'line': port_index + 1
+                    })
 
         return all_messages
