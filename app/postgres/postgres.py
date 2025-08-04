@@ -63,14 +63,13 @@ class DbWriter:
         return result > 0
     
     def write(self, message):
+        if self._message_exists(message):
+            return False  
         cursor = self.conn.cursor()
-        if not self._message_exists(message):
-            cursor.execute("""
-                INSERT INTO sms_messages (date, phone, text) VALUES (%s, %s, %s)
-            """, (message['date'], message['from'], message['text']))
-            self.conn.commit()
-            _write_status = True
-        else:
-            _write_status = False
-        return _write_status
+        cursor.execute("""
+            INSERT INTO sms_messages (date, phone, text) VALUES (%s, %s, %s)
+        """, (message['date'], message['from'], message['text']))
+        self.conn.commit()
+        return True  
+
 
