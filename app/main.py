@@ -21,6 +21,8 @@ while True:
     
     messages = Goip._receive_messages()
 
+    print(messages)
+
     if not messages:
         print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] No messages")
 
@@ -28,9 +30,9 @@ while True:
         sim = vars.get_port_names(i)
         # print(sim)
         for message in ch_line_messages:
-            # print(message)
+            print(message)
             _write_status = Database.write(message)
-            # print(_write_status)
+            print(_write_status)
             if _write_status:
                 print(f"+ New SMS message for channel {sim} from {message['from']}")
                 # Slack._send(message, sim)
