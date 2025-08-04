@@ -1,8 +1,6 @@
 import base64
 import requests
 import re
-import csv
-
 
 class GoipGateway:
     def __init__(self, goip_addr, goip_user, goip_password):
@@ -36,16 +34,23 @@ class GoipGateway:
         sms_dump_arr = re.findall(r'sms= \[(.*?)\]', data, re.IGNORECASE | re.DOTALL)
 
         all_messages = []
-        for sim_key, sim_val in enumerate(sms_dump_arr):
-            for sms_val in csv.reader([sim_val], skipinitialspace=True, quotechar="'"):
-                messages = [
-                    {'date': sms_val[i], 'from': sms_val[i+1], 'text': sms_val[i+2], 'line': i+1}
-                    for i in range(0, len(sms_val) - 2, 3)
-                    if sms_val[i] != '""'
-                ]
-                all_messages.append(messages)
+
+        for sim_index, sim_raw in enumerate(sms_dump_arr):
+            sim_messages = []
+            items = [x.strip("'") for x in re.findall(r"'(.*?)'", sim_raw)]
+
+            # Разбиваем на блоки по 3 (дата, отправитель, текст)
+            for i in range(0, len(items) - 2, 3):
+                date = items[i]
+                sender = items[i + 1]
+                text = items[i + 2]
+                sim_messages.append({
+                    'date': date,
+                    'from': sender,
+                    'text': text,
+                    'line': i + 1
+                })
+
+            all_messages.append(sim_messages)
 
         return all_messages
-    
-
-
