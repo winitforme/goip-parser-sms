@@ -5,6 +5,7 @@ class Vars:
         self.goip_addr = os.environ['GOIP_ADDR']
         self.goip_user = os.environ['GOIP_USER']
         self.goip_password = os.environ['GOIP_PASSWORD']
+        self.goip_location = os.environ['GOIP_LOCATION']
         self.db_host = os.environ['DB_HOST']
         self.db_port = os.environ['DB_PORT']
         self.db_name = os.environ['DB_NAME']

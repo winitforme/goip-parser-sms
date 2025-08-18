@@ -1,15 +1,17 @@
 import requests
 
 class HttpsSender:
-    def __init__(self, url):
+    def __init__(self, url, location):
         self.url = url
+        self.goip_location = location
 
     def send(self, message, sim):
         headers = {
             "Content-Type": "application/json; charset=utf-8"
         }
         payload = {
-            "text": message
+            "text": message,
+            "location": self.goip_location
         }
 
         try:
