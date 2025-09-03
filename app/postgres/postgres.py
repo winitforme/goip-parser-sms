@@ -1,5 +1,6 @@
 import psycopg2
 import sys, time
+from datetime import datetime
 
 class DbWriter:
     def __init__(self, db_host, db_port, db_name, db_user, db_password, max_retries, retry_delay):
@@ -27,6 +28,7 @@ class DbWriter:
                     sslmode='disable'
                 )
                 self._create_table_if_not_exists()
+                self._ensure_sim_info_schema()
                 return
             except psycopg2.OperationalError as e:
                 retry_count += 1
@@ -71,5 +73,111 @@ class DbWriter:
         """, (message['date'], message['from'], message['text']))
         self.conn.commit()
         return True  
+    
+    def _ensure_sim_info_schema(self):
+        cur = self.conn.cursor()
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS sim_info (
+            id           BIGSERIAL PRIMARY KEY,
+            channel_id   INT NOT NULL CHECK (channel_id BETWEEN 1 AND 32),
+            dt           TIMESTAMPTZ DEFAULT now(),
+            operator     TEXT,
+            phone        TEXT,
+            name         TEXT,
+            pin          INT,
+            imsi         BIGINT,
+            last_digits  INT,
+            valid_from   TIMESTAMPTZ NOT NULL DEFAULT now(),
+            valid_to     TIMESTAMPTZ,
+            is_current   BOOLEAN NOT NULL DEFAULT true
+        );
 
+        CREATE UNIQUE INDEX IF NOT EXISTS ux_sim_info_channel_current
+          ON sim_info (channel_id)
+          WHERE (is_current = true AND valid_to IS NULL);
 
+        CREATE INDEX IF NOT EXISTS ix_sim_info_channel_timeline
+          ON sim_info (channel_id, valid_from, COALESCE(valid_to, 'infinity'));
+
+        CREATE OR REPLACE VIEW sim_info_current AS
+        SELECT *
+        FROM sim_info
+        WHERE is_current = true AND valid_to IS NULL;
+        """)
+        self.conn.commit()
+
+    def upsert_sim_info_rows(self, rows):
+
+        cur = self.conn.cursor()
+        try:
+            for r in rows:
+                ch = r.get('channel_id')
+                if ch is None:
+                    continue
+
+                cur.execute("""
+                    SELECT id FROM sim_info
+                    WHERE channel_id = %s AND is_current = true AND valid_to IS NULL
+                    FOR UPDATE
+                """, (ch,))
+                row = cur.fetchone()
+
+                now = datetime.utcnow()
+
+                if row:
+                    cur.execute("""
+                        UPDATE sim_info
+                           SET valid_to = %s, is_current = false
+                         WHERE id = %s
+                    """, (now, row[0]))
+
+                cur.execute("""
+                    INSERT INTO sim_info (
+                        channel_id, dt, operator, phone, name, pin, imsi, last_digits,
+                        valid_from, valid_to, is_current
+                    ) VALUES (
+                        %s, now(), %s, %s, %s, %s, %s, %s,
+                        %s, NULL, true
+                    )
+                """, (
+                    ch,
+                    r.get('operator'),
+                    r.get('phone'),
+                    r.get('name'),
+                    r.get('pin'),
+                    r.get('imsi'),
+                    r.get('last_digits'),
+                    now
+                ))
+
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            raise e
+
+    def get_sim_info_by_channel(self, channel_id: int) -> dict | None:
+        cur = self.conn.cursor()
+        cur.execute("""
+            SELECT channel_id, operator, phone, name, pin, imsi, last_digits
+            FROM sim_info_current
+            WHERE channel_id = %s
+            LIMIT 1
+        """, (channel_id,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        keys = ["channel_id","operator","phone","name","pin","imsi","last_digits"]
+        return dict(zip(keys, row))
+
+    def load_sim_info_current_map(self) -> dict[int, dict]:
+        cur = self.conn.cursor()
+        cur.execute("""
+            SELECT channel_id, operator, phone, name, pin, imsi, last_digits
+            FROM sim_info_current
+        """)
+        res = {}
+        keys = ["channel_id","operator","phone","name","pin","imsi","last_digits"]
+        for row in cur.fetchall():
+            d = dict(zip(keys, row))
+            res[d["channel_id"]] = d
+        return res

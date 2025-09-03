@@ -3,11 +3,14 @@ version: '3.5'
 services:
   goip-sms-receiver:
     build: .
+    stop_signal: SIGINT
+    stop_grace_period: 5s
     env_file:
       - .env_goip
     restart: always
     volumes:
       - ./app:/app
+      - shared_data:/shared_data
     depends_on:
       - psql
     command: ["python", "-u", "main.py"]

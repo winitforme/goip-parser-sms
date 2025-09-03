@@ -22,6 +22,10 @@ class Vars:
         self.smtpport = os.environ['SMTP_PORT']
         self.email = os.environ['EMAIL']
         self.http_addr = os.environ['HTTP_ADDR']
+        self.sheet_url = os.environ['SHEET_URL']
+
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        self.shared_dir = BASE_DIR + '/../../shared_data'
 
     def get_port_names(self, port):
         return f"line {port + 1}"
