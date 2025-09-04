@@ -22,18 +22,18 @@ class SimInfoLoader:
     def download_excel(self, filename_prefix: str = "world_output") -> str:
         sheet_id = self._extract_sheet_id()
         export_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=xlsx"
-        logging.info(f"Downloading Excel: {export_url}")
+        logging.debug(f"Downloading Excel: {export_url}")
         resp = requests.get(export_url, timeout=60)
         resp.raise_for_status()
         ts = time.strftime("%Y%m%d")
         dest_path = os.path.join(self.shared_dir, f"{filename_prefix}_{ts}.xlsx")
         with open(dest_path, "wb") as f:
             f.write(resp.content)
-        logging.info(f"Saved: {dest_path}")
+        logging.debug(f"Saved: {dest_path}")
         return dest_path
 
     def parse_excel(self, xlsx_path: str) -> pd.DataFrame:
-        logging.info(f"Read Excel (header=1): {xlsx_path}")
+        logging.debug(f"Read Excel (header=1): {xlsx_path}")
         df = pd.read_excel(xlsx_path, header=1, engine="openpyxl", dtype=object)
         # print(df)
         df.columns = [str(c).strip() for c in df.columns]

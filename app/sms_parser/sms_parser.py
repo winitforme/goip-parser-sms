@@ -35,8 +35,6 @@ class GoipGateway:
         except Exception as e:
             logging.error(f"❌ Incorrect decode: {e}")
             return []
-        
-        logging.info(data)
 
         all_messages = [[] for _ in range(32)]  
         pattern = re.compile(r'sms= \[(.*?)\];\s*sms_row_insert\(.*?,\s*pos,\s*(\d+)\);', re.DOTALL)
@@ -44,9 +42,7 @@ class GoipGateway:
         for match in pattern.finditer(data):
             raw_sms, port_str = match.groups()
 
-            logging.info(raw_sms)
-            logging.info(port_str)
-
+            logging.debug(f"Find {port_str}: {raw_sms}")
 
             port_index = int(port_str) - 1
 
@@ -56,7 +52,12 @@ class GoipGateway:
             split_sms = re.findall(r'"(.*?)"', raw_sms)
 
             for msg in split_sms:
+                logging.debug(f"msg: {msg}")
+
                 parts = msg.split(",", 2)  # date, from, text
+
+                logging.debug(f"parts[0]: {parts[0]}")
+
                 if len(parts) == 3:
                     all_messages[port_index].append({
                         'date': parts[0].strip(),
