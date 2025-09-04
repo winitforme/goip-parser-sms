@@ -36,7 +36,7 @@ class SimInfoLoader:
 
     def parse_excel(self, xlsx_path: str) -> pd.DataFrame:
         logging.info(f"Read Excel (header=1): {xlsx_path}")
-        df = pd.read_excel(xlsx_path, header=1, engine="openpyxl")
+        df = pd.read_excel(xlsx_path, header=1, engine="openpyxl", dtype=object)
         # print(df)
         df.columns = [str(c).strip() for c in df.columns]
 
@@ -60,6 +60,8 @@ class SimInfoLoader:
         out["name"]       = df["full name"]
 
         def to_int_or_none(x):
+            if pd.isna(x):
+                return None
             try:
                 if pd.isna(x) or x == "":
                     return None
@@ -68,7 +70,10 @@ class SimInfoLoader:
                 return None
             
         def digits_str(s: str) -> str:
-            return re.sub(r"\D", "", s or "")
+            if pd.isna(x):
+                return ""
+            s = str(x).strip()
+            return re.sub(r"\D", "", s)
             
         def int_or_none_from_digits(s: str):
             d = digits_str(s)
