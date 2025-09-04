@@ -24,7 +24,6 @@ class GoipGateway:
                 timeout=5
             )
             response.raise_for_status()
-            logging.info(response.json())
         except requests.exceptions.RequestException as e:
             logging.error(f"❌ Ошибка при подключении к GoIP ({self.goip_addr}): {e}")
             return []
@@ -36,12 +35,19 @@ class GoipGateway:
         except Exception as e:
             logging.error(f"❌ Incorrect decode: {e}")
             return []
+        
+        logging.info(data)
 
         all_messages = [[] for _ in range(32)]  
         pattern = re.compile(r'sms= \[(.*?)\];\s*sms_row_insert\(.*?,\s*pos,\s*(\d+)\);', re.DOTALL)
 
         for match in pattern.finditer(data):
             raw_sms, port_str = match.groups()
+
+            logging.info(raw_sms)
+            logging.info(port_str)
+
+
             port_index = int(port_str) - 1
 
             if not raw_sms.strip():
