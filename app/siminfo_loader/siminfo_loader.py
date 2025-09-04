@@ -37,7 +37,7 @@ class SimInfoLoader:
     def parse_excel(self, xlsx_path: str) -> pd.DataFrame:
         logging.info(f"Read Excel (header=1): {xlsx_path}")
         df = pd.read_excel(xlsx_path, header=1, engine="openpyxl")
-        print(df)
+        # print(df)
         df.columns = [str(c).strip() for c in df.columns]
 
         colmap = {
@@ -66,6 +66,13 @@ class SimInfoLoader:
                 return int(str(x).strip())
             except Exception:
                 return None
+            
+        def digits_str(s: str) -> str:
+            return re.sub(r"\D", "", s or "")
+            
+        def int_or_none_from_digits(s: str):
+            d = digits_str(s)
+            return int(d) if d else None
 
         def digits_or_none(x):
             if pd.isna(x):
@@ -74,9 +81,9 @@ class SimInfoLoader:
             s = re.sub(r'\D', '', s)
             return s or None
 
-        out["pin"]         = df["Password"].apply(to_int_or_none)
+        out["pin"]         = df["Password"].apply(int_or_none_from_digits)
         out["imsi"]        = df["IMSI"].apply(digits_or_none)
-        out["last_digits"] = df["4 Last digits"].apply(to_int_or_none)
+        out["last_digits"] = df["4 Last digits"].apply(int_or_none_from_digits)
 
         out["channel_id"] = out["channel_id"].apply(to_int_or_none)
         out = out[out["channel_id"].between(1, 32, inclusive="both")]
