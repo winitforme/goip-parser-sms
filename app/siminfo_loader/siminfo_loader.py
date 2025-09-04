@@ -58,6 +58,9 @@ class SimInfoLoader:
         out["operator"]   = df["Mpesa/Airtel"]
         out["phone"]      = df["phone number"]
         out["name"]       = df["full name"]
+        out["pin"]        = df["Password"]
+        out["imsi"]       = df["IMSI"]
+        out["last_digits"] = df["4 Last digits"]
 
         def to_int_or_none(x):
             if pd.isna(x):
@@ -69,27 +72,6 @@ class SimInfoLoader:
             except Exception:
                 return None
             
-        def digits_str(x) -> str:
-            if pd.isna(x):
-                return ""
-            s = str(x).strip()
-            return re.sub(r"\D", "", s)
-            
-        def int_or_none_from_digits(x):
-            d = digits_str(x)
-            return int(d) if d else None
-
-        def digits_or_none(x):
-            if pd.isna(x):
-                return None
-            s = str(x).strip()
-            s = re.sub(r'\D', '', s)
-            return s or None
-
-        out["pin"]         = df["Password"].apply(int_or_none_from_digits)
-        out["imsi"]        = df["IMSI"].apply(digits_or_none)
-        out["last_digits"] = df["4 Last digits"].apply(int_or_none_from_digits)
-
         out["channel_id"] = out["channel_id"].apply(to_int_or_none)
         out = out[out["channel_id"].between(1, 32, inclusive="both")]
 

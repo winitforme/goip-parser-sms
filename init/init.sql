@@ -20,9 +20,9 @@ CREATE TABLE sim_info (
     operator     TEXT,
     phone        TEXT,
     name         TEXT,
-    pin          INT,
+    pin          TEXT,
     imsi         TEXT,
-    last_digits  INT,
+    last_digits  TEXT,
     valid_from   TIMESTAMPTZ NOT NULL DEFAULT now(),
     valid_to     TIMESTAMPTZ,
     is_current   BOOLEAN NOT NULL DEFAULT true
