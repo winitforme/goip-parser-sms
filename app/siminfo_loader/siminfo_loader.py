@@ -37,6 +37,7 @@ class SimInfoLoader:
     def parse_excel(self, xlsx_path: str) -> pd.DataFrame:
         logging.info(f"Read Excel (header=1): {xlsx_path}")
         df = pd.read_excel(xlsx_path, header=1, engine="openpyxl")
+        print(df)
         df.columns = [str(c).strip() for c in df.columns]
 
         colmap = {

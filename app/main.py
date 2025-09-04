@@ -24,11 +24,9 @@ while True:
 
     now = time.time()
     if now - last_loader_run >= 300:
-        path, n = loader.run()
         last_loader_run = now
-
-    path, n = loader.run()
-    print(f"Saved: {path}, rows parsed: {n}")
+        path, n = loader.run()
+        print(f"Saved: {path}, rows parsed: {n}")
     messages = Goip._receive_messages()
 
     if not any(messages): 
