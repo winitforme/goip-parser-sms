@@ -24,6 +24,7 @@ class GoipGateway:
                 timeout=5
             )
             response.raise_for_status()
+            logging.info(response.json())
         except requests.exceptions.RequestException as e:
             logging.error(f"❌ Ошибка при подключении к GoIP ({self.goip_addr}): {e}")
             return []
