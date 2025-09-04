@@ -36,7 +36,7 @@ class SimInfoLoader:
 
     def parse_excel(self, xlsx_path: str) -> pd.DataFrame:
         logging.info(f"Read Excel (header=1): {xlsx_path}")
-        df = pd.read_excel(xlsx_path, header=1)
+        df = pd.read_excel(xlsx_path, header=1, engine="openpyxl")
         df.columns = [str(c).strip() for c in df.columns]
 
         colmap = {
@@ -66,19 +66,15 @@ class SimInfoLoader:
             except Exception:
                 return None
 
-        def to_bigint_or_none(x):
-            try:
-                if pd.isna(x) or x == "":
-                    return None
-                s = str(x).strip()
-                if "." in s:
-                    s = s.split(".")[0]
-                return int(s)
-            except Exception:
+        def digits_or_none(x):
+            if pd.isna(x):
                 return None
+            s = str(x).strip()
+            s = re.sub(r'\D', '', s)
+            return s or None
 
         out["pin"]         = df["Password"].apply(to_int_or_none)
-        out["imsi"]        = df["IMSI"].apply(to_bigint_or_none)
+        out["imsi"]        = df["IMSI"].apply(digits_or_none)
         out["last_digits"] = df["4 Last digits"].apply(to_int_or_none)
 
         out["channel_id"] = out["channel_id"].apply(to_int_or_none)

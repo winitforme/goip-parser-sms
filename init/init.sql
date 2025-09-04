@@ -21,7 +21,7 @@ CREATE TABLE sim_info (
     phone        TEXT,
     name         TEXT,
     pin          INT,
-    imsi         BIGINT,
+    imsi         TEXT,
     last_digits  INT,
     valid_from   TIMESTAMPTZ NOT NULL DEFAULT now(),
     valid_to     TIMESTAMPTZ,
