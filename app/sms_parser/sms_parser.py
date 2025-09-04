@@ -66,5 +66,6 @@ class GoipGateway:
                         'line': port_index + 1
                     })
 
-        logging.debug(f"all_messages: {''.join(all_messages)}")
+        counts = [len(ch) for ch in all_messages]  
+        logging.debug("per-channel counts: %s (total=%d)", counts, sum(counts))
         return all_messages
