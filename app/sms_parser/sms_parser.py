@@ -66,4 +66,5 @@ class GoipGateway:
                         'line': port_index + 1
                     })
 
+        logging.debug(f"all_messages: {''.join(all_messages)}")
         return all_messages
