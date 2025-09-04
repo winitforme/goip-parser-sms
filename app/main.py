@@ -45,6 +45,10 @@ while True:
             sim_info = sim_info_map.get(channel_id)
 
             for message in ch_line_messages:
+
+                logging.debug("message:\n%s", json.dumps(message, indent=2, ensure_ascii=False))
+                logging.debug("sim_info:\n%s", json.dumps(sim_info, indent=2, ensure_ascii=False))
+
                 if Database.write(message):  
                     logging.info(f"+ New SMS message for channel {sim_name} from {message['from']}")
                     
