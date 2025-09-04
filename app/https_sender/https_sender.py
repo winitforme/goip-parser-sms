@@ -1,12 +1,13 @@
 # https_sender/https_sender.py
 import requests
+from typing import Optional
 
 class HttpsSender:
     def __init__(self, url, location):
         self.url = url
         self.goip_location = location
 
-    def send(self, message: dict, sim: str, sim_info: dict | None = None):
+    def send(self, message: dict, sim: str, sim_info: Optional[dict] = None):
 
         headers = {"Content-Type": "application/json; charset=utf-8"}
 
