@@ -1,5 +1,5 @@
 import time
-import logging
+import logging, json
 from time import sleep
 from datetime import datetime
 from utils.utils import Vars
@@ -37,6 +37,7 @@ while True:
     else:
 
         sim_info_map = Database.load_sim_info_current_map()
+        logging.debug("sim_info_current map:\n%s", json.dumps(sim_info_map, indent=2, ensure_ascii=False))
 
         for i, ch_line_messages in enumerate(messages):
             sim_name = vars.get_port_names(i)

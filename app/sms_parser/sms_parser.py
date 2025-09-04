@@ -42,7 +42,7 @@ class GoipGateway:
         for match in pattern.finditer(data):
             raw_sms, port_str = match.groups()
 
-            logging.debug(f"Find {port_str}: {raw_sms}")
+            logging.debug(f"Channel {port_str}: {raw_sms}")
 
             port_index = int(port_str) - 1
 
@@ -55,8 +55,6 @@ class GoipGateway:
                 logging.debug(f"msg: {msg}")
 
                 parts = msg.split(",", 2)  # date, from, text
-
-                logging.debug(f"parts[0]: {parts[0]}")
 
                 if len(parts) == 3:
                     all_messages[port_index].append({
