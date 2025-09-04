@@ -1,6 +1,7 @@
 import psycopg2
 import sys, time
 from datetime import datetime
+from typing import Optional, Dict
 
 class DbWriter:
     def __init__(self, db_host, db_port, db_name, db_user, db_password, max_retries, retry_delay):
@@ -155,7 +156,7 @@ class DbWriter:
             self.conn.rollback()
             raise e
 
-    def get_sim_info_by_channel(self, channel_id: int) -> dict | None:
+    def get_sim_info_by_channel(self, channel_id: int) -> Optional[Dict]:
         cur = self.conn.cursor()
         cur.execute("""
             SELECT channel_id, operator, phone, name, pin, imsi, last_digits
@@ -169,7 +170,7 @@ class DbWriter:
         keys = ["channel_id","operator","phone","name","pin","imsi","last_digits"]
         return dict(zip(keys, row))
 
-    def load_sim_info_current_map(self) -> dict[int, dict]:
+    def load_sim_info_current_map(self) -> Dict[int, dict]:
         cur = self.conn.cursor()
         cur.execute("""
             SELECT channel_id, operator, phone, name, pin, imsi, last_digits
