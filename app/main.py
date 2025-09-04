@@ -50,7 +50,7 @@ while True:
                 logging.debug("sim_info:\n%s", json.dumps(sim_info, indent=2, ensure_ascii=False))
 
                 if Database.write(message):  
-                    logging.info(f"+ New SMS message for channel {sim_name} from {message['from']}")
+                    logging.warning(f"+ New SMS message for channel {sim_name} from {message['from']}")
                     
                     Https.send(message, sim_name, sim_info)
 
