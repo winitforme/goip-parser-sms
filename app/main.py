@@ -34,24 +34,25 @@ while True:
 
     if not any(messages): 
         logging.info(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] No messages")
+    else:
 
-    sim_info_map = Database.load_sim_info_current_map()
+        sim_info_map = Database.load_sim_info_current_map()
 
-    for i, ch_line_messages in enumerate(messages):
-        sim_name = vars.get_port_names(i)
-        channel_id = i + 1 
-        sim_info = sim_info_map.get(channel_id)
+        for i, ch_line_messages in enumerate(messages):
+            sim_name = vars.get_port_names(i)
+            channel_id = i + 1 
+            sim_info = sim_info_map.get(channel_id)
 
-        for message in ch_line_messages:
-            if Database.write(message):  
-                logging.info(f"+ New SMS message for channel {sim_name} from {message['from']}")
-                
-                Https.send(message, sim_name, sim_info)
+            for message in ch_line_messages:
+                if Database.write(message):  
+                    logging.info(f"+ New SMS message for channel {sim_name} from {message['from']}")
+                    
+                    Https.send(message, sim_name, sim_info)
 
-                try:
-                    Email.send(message, sim_name)
-                except Exception as e:
-                    logging.error(f"❌ Email send error: {e}")
+                    try:
+                        Email.send(message, sim_name)
+                    except Exception as e:
+                        logging.error(f"❌ Email send error: {e}")
 
     sleep(vars.timeout)
 
