@@ -28,6 +28,6 @@ class Vars:
         self.shared_dir = BASE_DIR + '/../../shared_data'
 
     def get_port_names(self, port):
-        return f"line {port + 1}"
+        return f"{port + 1}"
 
         

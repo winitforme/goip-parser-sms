@@ -1,5 +1,6 @@
 # https_sender/https_sender.py
 import requests
+import logging
 from typing import Optional
 
 class HttpsSender:
@@ -21,7 +22,6 @@ class HttpsSender:
             }
         }
         if sim_info:
-            # Пример структуры; поля бери из твоей sim_info_current
             payload["sim_info"] = {
                 "channel_id":   sim_info.get("channel_id"),
                 "operator":     sim_info.get("operator"),
@@ -35,8 +35,8 @@ class HttpsSender:
         try:
             response = requests.post(self.url, headers=headers, json=payload, timeout=15)
             if response.status_code == 200:
-                print(f"✅ Message '{message.get('text')}' forwarded from SIM {sim} to {self.url}")
+                logging.info(f"✅ Message '{message.get('text')}' forwarded from SIM {sim} to {self.url}")
             else:
-                print(f"❌ Failed to send message from SIM {sim}. Status: {response.status_code} Body: {response.text[:200]}")
+                logging.error(f"❌ Failed to send message from SIM {sim}. Status: {response.status_code} Body: {response.text[:200]}")
         except requests.RequestException as e:
-            print(f"❌ Error sending message from SIM {sim}: {e}")
+            logging.error(f"❌ Error sending message from SIM {sim}: {e}")

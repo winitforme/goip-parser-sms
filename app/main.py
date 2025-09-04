@@ -1,4 +1,5 @@
 import time
+import logging
 from time import sleep
 from datetime import datetime
 from utils.utils import Vars
@@ -18,7 +19,8 @@ Https = HttpsSender(vars.http_addr, location=vars.goip_location)
 loader = SimInfoLoader(sheet_url=vars.sheet_url, shared_dir=vars.shared_dir, db_writer=Database)
 last_loader_run = 0
 
-print(f"🟢 [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] running for {vars.goip_location}...")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+logging.warning(f"🟢 [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] running for {vars.goip_location}...")
 
 while True:
 
@@ -26,11 +28,12 @@ while True:
     if now - last_loader_run >= 300:
         last_loader_run = now
         path, n = loader.run()
-        print(f"Saved: {path}, rows parsed: {n}")
+        logging.info(f"Saved: {path}, rows parsed: {n}")
+        
     messages = Goip._receive_messages()
 
     if not any(messages): 
-        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] No messages")
+        logging.info(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] No messages")
 
     sim_info_map = Database.load_sim_info_current_map()
 
@@ -41,14 +44,14 @@ while True:
 
         for message in ch_line_messages:
             if Database.write(message):  
-                print(f"+ New SMS message for channel {sim_name} from {message['from']}")
+                logging.info(f"+ New SMS message for channel {sim_name} from {message['from']}")
                 
                 Https.send(message, sim_name, sim_info)
 
                 try:
                     Email.send(message, sim_name)
                 except Exception as e:
-                    print(f"❌ Email send error: {e}")
+                    logging.error(f"❌ Email send error: {e}")
 
     sleep(vars.timeout)
 

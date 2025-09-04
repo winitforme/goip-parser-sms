@@ -6,8 +6,6 @@ import requests
 import pandas as pd
 from postgres.postgres import DbWriter
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
-
 class SimInfoLoader:
     def __init__(self, sheet_url: str, shared_dir: str, db_writer: DbWriter):
         self.sheet_url = sheet_url
@@ -27,7 +25,7 @@ class SimInfoLoader:
         logging.info(f"Downloading Excel: {export_url}")
         resp = requests.get(export_url, timeout=60)
         resp.raise_for_status()
-        ts = time.strftime("%Y%m%d_%H%M%S")
+        ts = time.strftime("%Y%m%d")
         dest_path = os.path.join(self.shared_dir, f"{filename_prefix}_{ts}.xlsx")
         with open(dest_path, "wb") as f:
             f.write(resp.content)

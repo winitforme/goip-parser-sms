@@ -1,5 +1,6 @@
 import psycopg2
 import sys, time
+import logging
 from datetime import datetime
 from typing import Optional, Dict
 
@@ -33,15 +34,15 @@ class DbWriter:
                 return
             except psycopg2.OperationalError as e:
                 retry_count += 1
-                print(f"Could not connect. Attempt {retry_count}/{self.max_retries}")
-                print(f"host {self.db_host}/ port {self.db_port}/ dbname {self.db_name} / user {self.db_user}")
-                print(f"Error details: {e}")
+                logging.error(f"Could not connect. Attempt {retry_count}/{self.max_retries}")
+                logging.error(f"host {self.db_host}/ port {self.db_port}/ dbname {self.db_name} / user {self.db_user}")
+                logging.error(f"Error details: {e}")
             except psycopg2.OperationalError:
                 retry_count += 1
-                print(f"Could not connect. Attempt {retry_count}/{self.max_retries}")
-                print(f"host {self.db_host}/ port {self.db_port}/ dbname {self.db_name} / user {self.db_user}")
+                logging.error(f"Could not connect. Attempt {retry_count}/{self.max_retries}")
+                logging.error(f"host {self.db_host}/ port {self.db_port}/ dbname {self.db_name} / user {self.db_user}")
                 if retry_count >= self.max_retries:
-                    print("Error: Could not connect to the database.")
+                    logging.error("Error: Could not connect to the database.")
                     sys.exit(1)
                 time.sleep(self.retry_delay)
 

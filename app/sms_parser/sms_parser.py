@@ -1,5 +1,6 @@
 import base64
 import requests
+import logging
 import re
 import csv
 
@@ -24,15 +25,18 @@ class GoipGateway:
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            print(f"❌ Ошибка при подключении к GoIP ({self.goip_addr}): {e}")
+            logging.error(f"❌ Ошибка при подключении к GoIP ({self.goip_addr}): {e}")
             return []
 
         try:
             data = response.content.decode('utf-8')
         except UnicodeDecodeError:
             data = response.content.decode('latin1')
+        except Exception as e:
+            logging.error(f"❌ Incorrect decode: {e}")
+            return []
 
-        all_messages = [[] for _ in range(32)]  # по числу каналов
+        all_messages = [[] for _ in range(32)]  
         pattern = re.compile(r'sms= \[(.*?)\];\s*sms_row_insert\(.*?,\s*pos,\s*(\d+)\);', re.DOTALL)
 
         for match in pattern.finditer(data):
@@ -42,7 +46,6 @@ class GoipGateway:
             if not raw_sms.strip():
                 continue
 
-            # Сплит по ", но с учётом, что текст может содержать запятые
             split_sms = re.findall(r'"(.*?)"', raw_sms)
 
             for msg in split_sms:

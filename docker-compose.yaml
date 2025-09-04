@@ -10,7 +10,7 @@ services:
     restart: always
     volumes:
       - ./app:/app
-      - ./shared_data:/app/shared_data
+      - ./shared_data:/shared_data
     depends_on:
       - psql
     command: ["python", "-u", "main.py"]

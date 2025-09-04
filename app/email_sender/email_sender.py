@@ -1,4 +1,5 @@
 import smtplib
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -19,7 +20,7 @@ class EmailSender:
         body = f"[{self.goip_location}] New message:\n  Date: {message['date']}\n  Client: {message['from']}\n  Text: {message['text']}\n"
         msg.attach(MIMEText(body, 'plain'))
 
-        print(msg)
+        logging.info(f"Send to {self.email} message {message['from']}")
         try:
             server = smtplib.SMTP(self.smtphost, self.smtpport)
             server.starttls()
@@ -27,6 +28,6 @@ class EmailSender:
             text = msg.as_string()
             server.sendmail(self.smtp_login, self.email, text)
             server.quit()
-            print("♻️ Email sent successfully!")
+            logging.info("♻️ Email sent successfully!")
         except Exception as e:
-            print("❗️ Error sending email:", e)
+            logging.error("❗️ Error sending email:", e)
