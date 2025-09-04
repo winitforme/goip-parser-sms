@@ -69,14 +69,14 @@ class SimInfoLoader:
             except Exception:
                 return None
             
-        def digits_str(s: str) -> str:
+        def digits_str(x) -> str:
             if pd.isna(x):
                 return ""
             s = str(x).strip()
             return re.sub(r"\D", "", s)
             
-        def int_or_none_from_digits(s: str):
-            d = digits_str(s)
+        def int_or_none_from_digits(x):
+            d = digits_str(x)
             return int(d) if d else None
 
         def digits_or_none(x):
