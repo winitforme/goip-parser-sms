@@ -1,4 +1,5 @@
 import os
+import logging
 
 class Vars:
     def __init__(self):
@@ -23,6 +24,8 @@ class Vars:
         self.email = os.environ['EMAIL']
         self.http_addr = os.environ['HTTP_ADDR']
         self.sheet_url = os.environ['SHEET_URL']
+        level_name = os.environ.get("LOGLEVEL", "DEBUG").upper()
+        self.loglevel = getattr(logging, level_name, logging.DEBUG)
 
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         self.shared_dir = BASE_DIR + '/../../shared_data'

@@ -19,7 +19,7 @@ Https = HttpsSender(vars.http_addr, location=vars.goip_location)
 loader = SimInfoLoader(sheet_url=vars.sheet_url, shared_dir=vars.shared_dir, db_writer=Database)
 last_loader_run = 0
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+logging.basicConfig(level=vars.loglevel, format="%(asctime)s %(levelname)s: %(message)s")
 logging.warning(f"🟢 [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] running for {vars.goip_location}...")
 
 while True:
