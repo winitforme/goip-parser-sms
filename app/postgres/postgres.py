@@ -53,7 +53,8 @@ class DbWriter:
                 id SERIAL PRIMARY KEY,
                 date TEXT NOT NULL,
                 phone TEXT NOT NULL,
-                text TEXT NOT NULL
+                text TEXT NOT NULL,
+                is_sent BOOLEAN DEFAULT FALSE
             )
         """)
         self.conn.commit()
@@ -66,16 +67,29 @@ class DbWriter:
         result = cursor.fetchone()[0]
         return result > 0
     
-    def write(self, message):
-        if self._message_exists(message):
-            return False  
+    def write(self, message, is_send: bool = False):
         cursor = self.conn.cursor()
         cursor.execute("""
-            INSERT INTO sms_messages (date, phone, text) VALUES (%s, %s, %s)
+            SELECT is_sent FROM sms_messages
+            WHERE date = %s AND phone = %s AND text = %s
+            LIMIT 1
         """, (message['date'], message['from'], message['text']))
-        self.conn.commit()
-        return True  
-    
+        row = cursor.fetchone()
+
+        if row:
+            is_sent = row[0]
+            if is_sent is False:
+                return True
+            else:
+                return False
+        else:
+            cursor.execute("""
+                INSERT INTO sms_messages (date, phone, text, is_sent)
+                VALUES (%s, %s, %s, %s)
+            """, (message['date'], message['from'], message['text'], is_send))
+            self.conn.commit()
+            return True
+
     def _ensure_sim_info_schema(self):
         cur = self.conn.cursor()
         cur.execute("""

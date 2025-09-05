@@ -50,9 +50,12 @@ while True:
                 logging.debug("sim_info:\n%s", json.dumps(sim_info, indent=2, ensure_ascii=False))
 
                 if Database.write(message):  
-                    logging.warning(f"+ New SMS message for channel {sim_name} from {message['from']}")
+                    logging.warning(f"📩 New SMS message for channel {sim_name} from {message['from']}")
                     
-                    Https.send(message, sim_name, sim_info)
+                    is_send = Https.send(message, sim_name, sim_info)
+                    if is_send:
+                        Database.write(message, True)
+                        logging.warning(f"📤 SMS callback for channel {sim_name} from {message['from']} was successfully send")
 
                     try:
                         Email.send(message, sim_name)

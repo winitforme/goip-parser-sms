@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS sms_messages (
     id SERIAL PRIMARY KEY,
     date TEXT NOT NULL,
     phone TEXT NOT NULL,
-    text TEXT NOT NULL
+    text TEXT NOT NULL,
+    is_sent BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE sim_info (
