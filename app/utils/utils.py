@@ -23,6 +23,7 @@ class Vars:
         self.smtpport = os.environ['SMTP_PORT']
         self.email = os.environ['EMAIL']
         self.http_addr = os.environ['HTTP_ADDR']
+        self.secret = os.environ['SECRET']
         self.sheet_url = os.environ['SHEET_URL']
         level_name = os.environ.get("LOGLEVEL", "DEBUG").upper()
         self.loglevel = getattr(logging, level_name, logging.DEBUG)

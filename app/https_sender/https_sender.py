@@ -9,9 +9,10 @@ from typing import Union
 from typing import Optional
 
 class HttpsSender:
-    def __init__(self, url, location):
+    def __init__(self, url, location, salt):
         self.url = url
         self.goip_location = location
+        self.salt = salt
 
     def calculate_mobile_api_simbank_signature(payload: dict, key: str) -> str:
 
@@ -48,7 +49,7 @@ class HttpsSender:
                 "last_digits":  sim_info.get("last_digits"),
             }
 
-        signature = self.calculate_mobile_api_simbank_signature(payload, "secret-key")
+        signature = self.calculate_mobile_api_simbank_signature(payload, self.salt)
 
         payload['signature'] = signature
 

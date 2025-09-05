@@ -15,7 +15,7 @@ Goip = GoipGateway(vars.goip_addr, vars.goip_user, vars.goip_password)
 Database = DbWriter(vars.db_host, vars.db_port, vars.db_name, vars.db_user, vars.db_password, vars.max_retries, vars.retry_delay)
 Slack = SlackSender(slack_channel=vars.slack_channel, slack_token=vars.slack_token, location=vars.goip_location)
 Email = EmailSender(smtp_login=vars.smtp_login, smtp_password=vars.smtp_password, email=vars.email, smtphost=vars.smtphost, smtpport=vars.smtpport, location=vars.goip_location)
-Https = HttpsSender(vars.http_addr, location=vars.goip_location)
+Https = HttpsSender(vars.http_addr, location=vars.goip_location, salt=vars.secret)
 loader = SimInfoLoader(sheet_url=vars.sheet_url, shared_dir=vars.shared_dir, db_writer=Database)
 last_loader_run = 0
 
