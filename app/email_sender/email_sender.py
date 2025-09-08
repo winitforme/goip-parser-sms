@@ -21,13 +21,13 @@ class EmailSender:
 
         if sim_info:
             sim_info_text = ""
-            sim_info_text += f"\n{sim_info.get('channel_id') }"
-            sim_info_text += f"\n{sim_info.get('operator')}" 
-            sim_info_text += f"\n{sim_info.get('phone')}" 
-            sim_info_text += f"\n{sim_info.get('name')}" 
-            sim_info_text += f"\n{sim_info.get('pin')}" 
-            sim_info_text += f"\n{sim_info.get('imsi')}" 
-            sim_info_text += f"\n{sim_info.get('last_digits')}" 
+            sim_info_text += f"\nchannel_id: {sim_info.get('channel_id') }"
+            sim_info_text += f"\noperator: {sim_info.get('operator')}" 
+            sim_info_text += f"\nphone: {sim_info.get('phone')}" 
+            sim_info_text += f"\nname: {sim_info.get('name')}" 
+            sim_info_text += f"\npin: {sim_info.get('pin')}" 
+            sim_info_text += f"\nimsi: {sim_info.get('imsi')}" 
+            sim_info_text += f"\nlast_digits: {sim_info.get('last_digits')}" 
 
         msg = MIMEMultipart()
         msg["From"] = self.smtp_login
@@ -62,7 +62,7 @@ class EmailSender:
 
             server.sendmail(self.smtp_login, [self.email], msg.as_string())
             server.quit()
-            logging.info("✅ Email sent successfully")
+            logging.warning("✅ Email sent successfully")
             return True
 
         except SMTPAuthenticationError as e:
