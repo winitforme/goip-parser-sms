@@ -32,13 +32,13 @@ class EmailSender:
         msg = MIMEMultipart()
         msg["From"] = self.smtp_login
         msg["To"] = self.email
-        msg["Subject"] = f"New SMS for {sim}"
+        msg["Subject"] = f"[{self.goip_location}] New SMS for channel {sim}"
         body = (
             f"[{self.goip_location}] New message:\n"
-            f"  Date: {message.get('date')}\n"
-            f"  Client: {message.get('from')}\n"
-            f"  Text: {message.get('text')}\n"
-            f"  sim_info: {sim_info_text}\n"
+            f"  \nDate: {message.get('date')}\n"
+            f"  \nClient: {message.get('from')}\n"
+            f"  \nText: {message.get('text')}\n"
+            f"  \nsim_info: {sim_info_text}\n"
         )
         msg.attach(MIMEText(body, "plain"))
 

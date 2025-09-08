@@ -64,7 +64,7 @@ while True:
                         if Email.send(message, sim_name, sim_info):
                             Database.write(message, new_is_sent_email=True)
                     except Exception as e:
-                        logging.error(f"❌ Email send error: {e}")
+                        logging.warning(f"❌ Email send error: {e}")
 
     sleep(vars.timeout)
 

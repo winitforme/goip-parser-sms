@@ -64,3 +64,6 @@ class HttpsSender:
         except requests.RequestException as e:
             logging.error(f"❌ Error sending message from SIM {sim}: {e}")
             return False
+        except Exception as e:
+            logging.error(f"❌ Error sending callback from SIM {sim}: {e}")
+            return False
