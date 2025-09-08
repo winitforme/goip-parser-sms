@@ -17,6 +17,7 @@ services:
 
   psql:
     image: postgres:latest
+    container_name: goip-parser-sms-psql-1
     restart: always
     env_file:
       - .env_psql
