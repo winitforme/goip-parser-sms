@@ -55,7 +55,8 @@ class DbWriter:
                 date TEXT NOT NULL,
                 phone TEXT NOT NULL,
                 text TEXT NOT NULL,
-                is_sent BOOLEAN DEFAULT FALSE
+                is_sent BOOLEAN DEFAULT FALSE,
+                insertdate TIMESTAMPTZ NOT NULL DEFAULT now()
             )
         """)
         self.conn.commit()
