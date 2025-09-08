@@ -49,6 +49,9 @@ while True:
                 logging.debug("message:\n%s", json.dumps(message, indent=2, ensure_ascii=False))
                 logging.debug("sim_info:\n%s", json.dumps(sim_info, indent=2, ensure_ascii=False))
 
+                if Database.message_exists_and_send(message):
+                    continue
+
                 if Database.write(message, new_is_sent_http=False, new_is_sent_email=False):  
                     logging.warning(f"📩 New SMS message for channel {sim_name} from {message['from']}")
                     
@@ -58,7 +61,7 @@ while True:
                         logging.warning(f"📤 SMS callback for channel {sim_name} from {message['from']} was successfully send")
 
                     try:
-                        if Email.send(message, sim_name):
+                        if Email.send(message, sim_name, sim_info):
                             Database.write(message, new_is_sent_email=True)
                     except Exception as e:
                         logging.error(f"❌ Email send error: {e}")

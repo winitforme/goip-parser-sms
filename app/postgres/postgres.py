@@ -62,10 +62,10 @@ class DbWriter:
         """)
         self.conn.commit()
     
-    def _message_exists(self, message):
+    def message_exists_and_send(self, message):
         cursor = self.conn.cursor()
         cursor.execute("""
-            SELECT COUNT(*) FROM sms_messages WHERE date = %s AND phone = %s AND text = %s
+            SELECT COUNT(*) FROM sms_messages WHERE date = %s AND phone = %s AND text = %s AND is_sent_http = True 
         """, (message['date'], message['from'], message['text']))
         result = cursor.fetchone()[0]
         return result > 0

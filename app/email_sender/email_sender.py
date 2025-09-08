@@ -4,6 +4,8 @@ import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from smtplib import SMTPAuthenticationError
+from typing import Union
+from typing import Optional
 
 class EmailSender:
     def __init__(self, smtp_login, smtp_password, email, smtphost, smtpport, location, debug=False):
@@ -15,7 +17,18 @@ class EmailSender:
         self.goip_location = location
         self.debug = debug
 
-    def send(self, message, sim) -> bool:
+    def send(self, message, sim, sim_info: Optional[dict] = None) -> bool:
+
+        if sim_info:
+            sim_info_text = ""
+            sim_info_text += f"\n{sim_info.get("channel_id") }"
+            sim_info_text += f"\n{sim_info.get("operator")}" 
+            sim_info_text += f"\n{sim_info.get("phone")}" 
+            sim_info_text += f"\n{sim_info.get("name")}" 
+            sim_info_text += f"\n{sim_info.get("pin")}" 
+            sim_info_text += f"\n{sim_info.get("imsi")}" 
+            sim_info_text += f"\n{sim_info.get("last_digits")}" 
+
         msg = MIMEMultipart()
         msg["From"] = self.smtp_login
         msg["To"] = self.email
@@ -25,6 +38,7 @@ class EmailSender:
             f"  Date: {message.get('date')}\n"
             f"  Client: {message.get('from')}\n"
             f"  Text: {message.get('text')}\n"
+            f"  sim_info: {sim_info_text}\n"
         )
         msg.attach(MIMEText(body, "plain"))
 
@@ -44,7 +58,6 @@ class EmailSender:
                     server.starttls(context=context)
                     server.ehlo()
 
-            # у большинства провайдеров логин = полный email
             server.login(self.smtp_login, self.smtp_password)
 
             server.sendmail(self.smtp_login, [self.email], msg.as_string())
