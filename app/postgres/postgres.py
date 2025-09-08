@@ -31,6 +31,7 @@ class DbWriter:
                 )
                 self._create_table_if_not_exists()
                 self._ensure_sim_info_schema()
+                self._create_table_if_not_exists()
                 return
             except psycopg2.OperationalError as e:
                 retry_count += 1
@@ -67,28 +68,38 @@ class DbWriter:
         result = cursor.fetchone()[0]
         return result > 0
     
-    def write(self, message, is_send: bool = False):
-        cursor = self.conn.cursor()
-        cursor.execute("""
-            SELECT is_sent FROM sms_messages
-            WHERE date = %s AND phone = %s AND text = %s
-            LIMIT 1
-        """, (message['date'], message['from'], message['text']))
-        row = cursor.fetchone()
-
-        if row:
-            is_sent = row[0]
-            if is_sent is False:
-                return True
-            else:
-                return False
-        else:
-            cursor.execute("""
+    def _ensure_sms_unique_index(self):
+        cur = self.conn.cursor()
+        cur.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_sms_messages_dpt
+            ON sms_messages (date, phone, text)
+        """)
+        self.conn.commit()
+    
+    def write(self, message, new_is_sent: bool = False) -> bool:
+        try:
+            cur = self.conn.cursor()
+            cur.execute("""
                 INSERT INTO sms_messages (date, phone, text, is_sent)
                 VALUES (%s, %s, %s, %s)
-            """, (message['date'], message['from'], message['text'], is_send))
+                ON CONFLICT (date, phone, text)
+                DO UPDATE
+                SET is_sent = EXCLUDED.is_sent
+                WHERE sms_messages.is_sent IS DISTINCT FROM EXCLUDED.is_sent
+            """, (
+                message['date'],
+                message['from'],
+                message['text'],
+                new_is_sent
+            ))
             self.conn.commit()
             return True
+        except Exception as e:
+            try:
+                self.conn.rollback()
+            except Exception:
+                pass
+            return False
 
     def _ensure_sim_info_schema(self):
         cur = self.conn.cursor()

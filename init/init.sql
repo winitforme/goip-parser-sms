@@ -7,6 +7,9 @@ CREATE TABLE IF NOT EXISTS sms_messages (
     is_sent BOOLEAN DEFAULT FALSE
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS ux_sms_messages_dpt
+  ON sms_messages (date, phone, text);
+
 CREATE TABLE IF NOT EXISTS sim_info (
     id           BIGSERIAL PRIMARY KEY,
     channel_id   INT NOT NULL CHECK (channel_id BETWEEN 1 AND 32),
