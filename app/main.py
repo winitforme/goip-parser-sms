@@ -18,6 +18,7 @@ Email = EmailSender(smtp_login=vars.smtp_login, smtp_password=vars.smtp_password
 Https = HttpsSender(vars.http_addr, location=vars.goip_location, salt=vars.secret)
 loader = SimInfoLoader(sheet_url=vars.sheet_url, shared_dir=vars.shared_dir, db_writer=Database)
 last_loader_run = 0
+last_cleanup = 0
 
 logging.basicConfig(level=vars.loglevel, format="%(asctime)s %(levelname)s: %(message)s")
 logging.warning(f"🟢 [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] running for {vars.goip_location}...")
@@ -29,6 +30,11 @@ while True:
         last_loader_run = now
         path, n = loader.run()
         logging.info(f"Saved: {path}, rows parsed: {n}")
+
+    if now - last_cleanup > 86400:
+        last_cleanup = now
+        deleted = Database.cleanup_old_messages(months=1)
+        logging.warning(f"🧹 Deleted {deleted} old messages from sms_messages")
         
     messages = Goip._receive_messages()
 

@@ -77,6 +77,24 @@ class DbWriter:
             ON sms_messages (date, phone, text)
         """)
         self.conn.commit()
+
+    def cleanup_old_messages(self, months: int = 1) -> int:
+        try:
+            cur = self.conn.cursor()
+            cur.execute("""
+                DELETE FROM sms_messages
+                WHERE insertdate < now() - interval %s
+            """, (f'{months} month',))
+            deleted_count = cur.rowcount
+            self.conn.commit()
+            return deleted_count
+        except Exception as e:
+            try:
+                self.conn.rollback()
+            except Exception:
+                pass
+            logging.error(f"❌ Error cleaning old messages: {e}")
+            return 0
     
     def write(self, message, new_is_sent_http: bool = False, new_is_sent_email: bool = False) -> bool:
         try:
