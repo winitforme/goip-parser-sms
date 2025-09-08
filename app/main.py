@@ -49,16 +49,17 @@ while True:
                 logging.debug("message:\n%s", json.dumps(message, indent=2, ensure_ascii=False))
                 logging.debug("sim_info:\n%s", json.dumps(sim_info, indent=2, ensure_ascii=False))
 
-                if Database.write(message, False):  
+                if Database.write(message, new_is_sent_http=False, new_is_sent_email=False):  
                     logging.warning(f"📩 New SMS message for channel {sim_name} from {message['from']}")
                     
                     is_send = Https.send(message, sim_name, sim_info)
                     if is_send:
-                        Database.write(message, True)
+                        Database.write(message, new_is_sent_http=True)
                         logging.warning(f"📤 SMS callback for channel {sim_name} from {message['from']} was successfully send")
 
                     try:
-                        Email.send(message, sim_name)
+                        if Email.send(message, sim_name):
+                            Database.write(message, new_is_sent_email=True)
                     except Exception as e:
                         logging.error(f"❌ Email send error: {e}")
 

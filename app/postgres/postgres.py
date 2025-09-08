@@ -55,7 +55,8 @@ class DbWriter:
                 date TEXT NOT NULL,
                 phone TEXT NOT NULL,
                 text TEXT NOT NULL,
-                is_sent BOOLEAN DEFAULT FALSE,
+                is_sent_http BOOLEAN DEFAULT FALSE,
+                is_sent_email BOOLEAN DEFAULT FALSE,
                 insertdate TIMESTAMPTZ NOT NULL DEFAULT now()
             )
         """)
@@ -77,21 +78,24 @@ class DbWriter:
         """)
         self.conn.commit()
     
-    def write(self, message, new_is_sent: bool = False) -> bool:
+    def write(self, message, new_is_sent_http: bool = False, new_is_sent_email: bool = False) -> bool:
         try:
             cur = self.conn.cursor()
             cur.execute("""
-                INSERT INTO sms_messages (date, phone, text, is_sent)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO sms_messages (date, phone, text, is_sent_http, is_sent_email)
+                VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT (date, phone, text)
                 DO UPDATE
-                SET is_sent = EXCLUDED.is_sent
-                WHERE sms_messages.is_sent IS DISTINCT FROM EXCLUDED.is_sent
+                SET is_sent_http  = sms_messages.is_sent_http  OR EXCLUDED.is_sent_http,
+                    is_sent_email = sms_messages.is_sent_email OR EXCLUDED.is_sent_email
+                WHERE (NOT sms_messages.is_sent_http  AND EXCLUDED.is_sent_http)
+                    OR (NOT sms_messages.is_sent_email AND EXCLUDED.is_sent_email)
             """, (
                 message['date'],
                 message['from'],
                 message['text'],
-                new_is_sent
+                new_is_sent_http,
+                new_is_sent_email
             ))
             self.conn.commit()
             return True

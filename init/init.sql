@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS sms_messages (
     date TEXT NOT NULL,
     phone TEXT NOT NULL,
     text TEXT NOT NULL,
-    is_sent BOOLEAN DEFAULT FALSE
+    is_sent_http BOOLEAN DEFAULT FALSE,
+    is_sent_email BOOLEAN DEFAULT FALSE,
+    insertdate TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS ux_sms_messages_dpt
