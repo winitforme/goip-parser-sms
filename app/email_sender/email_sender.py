@@ -21,13 +21,13 @@ class EmailSender:
 
         if sim_info:
             sim_info_text = ""
-            sim_info_text += f"\n{sim_info.get("channel_id") }"
-            sim_info_text += f"\n{sim_info.get("operator")}" 
-            sim_info_text += f"\n{sim_info.get("phone")}" 
-            sim_info_text += f"\n{sim_info.get("name")}" 
-            sim_info_text += f"\n{sim_info.get("pin")}" 
-            sim_info_text += f"\n{sim_info.get("imsi")}" 
-            sim_info_text += f"\n{sim_info.get("last_digits")}" 
+            sim_info_text += f"\n{sim_info.get('channel_id') }"
+            sim_info_text += f"\n{sim_info.get('operator')}" 
+            sim_info_text += f"\n{sim_info.get('phone')}" 
+            sim_info_text += f"\n{sim_info.get('name')}" 
+            sim_info_text += f"\n{sim_info.get('pin')}" 
+            sim_info_text += f"\n{sim_info.get('imsi')}" 
+            sim_info_text += f"\n{sim_info.get('last_digits')}" 
 
         msg = MIMEMultipart()
         msg["From"] = self.smtp_login
