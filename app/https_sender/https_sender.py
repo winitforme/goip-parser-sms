@@ -14,7 +14,7 @@ class HttpsSender:
         self.goip_location = location
         self.salt = salt
 
-    def calculate_mobile_api_simbank_signature(payload: dict, key: str) -> str:
+    def calculate_mobile_api_simbank_signature(self, payload: dict, key: str) -> str:
 
         body_str = json.dumps(payload, separators=(',', ':'), ensure_ascii=False)
         body_bytes = body_str.encode("utf-8")
