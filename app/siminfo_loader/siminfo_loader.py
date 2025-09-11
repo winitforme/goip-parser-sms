@@ -40,7 +40,7 @@ class SimInfoLoader:
 
         colmap = {
             "Slot / Channel": "channel_id",
-            "Mpesa/Airtel": "operator",
+            "Operator": "operator",
             "phone number": "phone",
             "full name": "name",
             "Password": "pin",
@@ -53,7 +53,7 @@ class SimInfoLoader:
 
         out = pd.DataFrame()
         out["channel_id"] = df["Slot / Channel"]
-        out["operator"]   = df["Mpesa/Airtel"]
+        out["operator"]   = df["Operator"]
         out["phone"]      = df["phone number"]
         out["name"]       = df["full name"]
         out["pin"]        = df["Password"]
