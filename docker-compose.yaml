@@ -8,6 +8,10 @@ services:
     env_file:
       - .env_goip
     restart: always
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+      - 9.9.9.9
     volumes:
       - ./app:/app
       - ./shared_data:/shared_data
