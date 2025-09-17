@@ -19,7 +19,7 @@ Https = HttpsSender(vars.http_addr, location=vars.goip_location, salt=vars.secre
 loader = SimInfoLoader(sheet_url=vars.sheet_url, shared_dir=vars.shared_dir, db_writer=Database)
 last_loader_run = 0
 last_cleanup = 0
-next_stats_at = datetime.now()
+next_stats_at = time.time()
 
 logging.basicConfig(level=vars.loglevel, format="%(asctime)s %(levelname)s: %(message)s")
 logging.warning(f"🟢 [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] running for {vars.goip_location}...")
@@ -27,7 +27,8 @@ logging.warning(f"🟢 [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] running 
 while True:
 
     now = time.time()
-    tomorrow = (now + timedelta(days=1)).date()
+    now_dt = datetime.now()
+    tomorrow = (now_dt + timedelta(days=1)).timestamp()
 
     if now - last_loader_run >= 300:
         last_loader_run = now
