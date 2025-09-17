@@ -1,7 +1,7 @@
 import time
 import logging, json
 from time import sleep
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.utils import Vars
 from sms_parser.sms_parser import GoipGateway
 from slack_sender.slack_sender import SlackSender
@@ -19,6 +19,7 @@ Https = HttpsSender(vars.http_addr, location=vars.goip_location, salt=vars.secre
 loader = SimInfoLoader(sheet_url=vars.sheet_url, shared_dir=vars.shared_dir, db_writer=Database)
 last_loader_run = 0
 last_cleanup = 0
+next_stats_at = datetime.now()
 
 logging.basicConfig(level=vars.loglevel, format="%(asctime)s %(levelname)s: %(message)s")
 logging.warning(f"🟢 [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] running for {vars.goip_location}...")
@@ -26,6 +27,8 @@ logging.warning(f"🟢 [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] running 
 while True:
 
     now = time.time()
+    tomorrow = (now + timedelta(days=1)).date()
+
     if now - last_loader_run >= 300:
         last_loader_run = now
         path, n = loader.run()
@@ -35,6 +38,22 @@ while True:
         last_cleanup = now
         deleted = Database.cleanup_old_messages(months=1)
         logging.warning(f"🧹 Deleted {deleted} old messages from sms_messages")
+
+    if now >= next_stats_at:
+        next_stats_at = tomorrow
+        try:
+            counts = Database.get_sms_counts_by_channel_last_24h()
+
+            if not counts:
+                logging.warning("[SMS daily] last 24h total SMS: 0")
+            else:
+                total = sum(counts.values())
+                logging.warning("[SMS daily] last 24h totals SMS: %d", total)
+                for ch, cnt in sorted(counts.items(), key=lambda kv: kv[0]):  
+                    logging.warning("[SMS daily] channel_%s: %d", ch, cnt)
+
+        except Exception:
+            logging.exception("[SMS daily] failed to get stats")
         
     messages = Goip._receive_messages()
 
@@ -59,17 +78,17 @@ while True:
                 if Database.message_exists_and_send(message):
                     continue
 
-                if Database.write(message, new_is_sent_http=False, new_is_sent_email=False):  
+                if Database.write(message, new_is_sent_http=False, new_is_sent_email=False, channel_id=channel_id):  
                     logging.warning(f"📩 New SMS message for channel {sim_name} from {message['from']}/phone {sim_phone}")
                     
                     is_send = Https.send(message, sim_name, sim_info)
                     if is_send:
-                        Database.write(message, new_is_sent_http=True)
+                        Database.write(message, new_is_sent_http=True, channel_id=channel_id)
                         logging.warning(f"📤 SMS callback for channel {sim_name} from {message['from']}/phone {sim_phone} was successfully send")
 
                     try:
                         if Email.send(message, sim_name, sim_info):
-                            Database.write(message, new_is_sent_email=True)
+                            Database.write(message, new_is_sent_email=True, channel_id=channel_id)
                     except Exception as e:
                         logging.warning(f"❌ Email send error: {e}")
 

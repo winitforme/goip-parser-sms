@@ -30,8 +30,9 @@ class DbWriter:
                     sslmode='disable'
                 )
                 self._create_table_if_not_exists()
+                self._ensure_sms_unique_index()
                 self._ensure_sim_info_schema()
-                self._create_table_if_not_exists()
+                self._ensure_sms_stats_indexes()
                 return
             except psycopg2.OperationalError as e:
                 retry_count += 1
@@ -52,6 +53,7 @@ class DbWriter:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS sms_messages (
                 id SERIAL PRIMARY KEY,
+                channel_id INT DEFAULT 0,
                 date TEXT NOT NULL,
                 phone TEXT NOT NULL,
                 text TEXT NOT NULL,
@@ -78,6 +80,14 @@ class DbWriter:
         """)
         self.conn.commit()
 
+    def _ensure_sms_stats_indexes(self):
+        cur = self.conn.cursor()
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS ix_sms_messages_channel_insertdate
+            ON sms_messages (channel_id, insertdate);
+        """)
+        self.conn.commit()
+
     def cleanup_old_messages(self, months: int = 1) -> int:
         try:
             cur = self.conn.cursor()
@@ -96,12 +106,12 @@ class DbWriter:
             logging.error(f"❌ Error cleaning old messages: {e}")
             return 0
     
-    def write(self, message, new_is_sent_http: bool = False, new_is_sent_email: bool = False) -> bool:
+    def write(self, message, new_is_sent_http: bool = False, new_is_sent_email: bool = False, channel_id: int = 0) -> bool:
         try:
             cur = self.conn.cursor()
             cur.execute("""
-                INSERT INTO sms_messages (date, phone, text, is_sent_http, is_sent_email)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO sms_messages (date, phone, text, is_sent_http, is_sent_email, channel_id)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (date, phone, text)
                 DO UPDATE
                 SET is_sent_http  = sms_messages.is_sent_http  OR EXCLUDED.is_sent_http,
@@ -113,7 +123,8 @@ class DbWriter:
                 message['from'],
                 message['text'],
                 new_is_sent_http,
-                new_is_sent_email
+                new_is_sent_email,
+                channel_id
             ))
             self.conn.commit()
             return True
@@ -123,6 +134,18 @@ class DbWriter:
             except Exception:
                 pass
             return False
+        
+    def get_sms_counts_by_channel_last_24h(self) -> Dict[int, int]:
+        cur = self.conn.cursor()
+        cur.execute("""
+            SELECT channel_id, COUNT(*) AS cnt
+            FROM sms_messages
+            WHERE insertdate >= now() - interval %s
+            GROUP BY channel_id
+            ORDER BY channel_id
+        """, ('24 hours',))
+        rows = cur.fetchall()
+        return {row[0]: row[1] for row in rows}
 
     def _ensure_sim_info_schema(self):
         cur = self.conn.cursor()

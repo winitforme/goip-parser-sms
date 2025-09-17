@@ -1,6 +1,7 @@
 
 CREATE TABLE IF NOT EXISTS sms_messages (
     id SERIAL PRIMARY KEY,
+    channel_id INT DEFAULT 0,
     date TEXT NOT NULL,
     phone TEXT NOT NULL,
     text TEXT NOT NULL,
@@ -11,6 +12,9 @@ CREATE TABLE IF NOT EXISTS sms_messages (
 
 CREATE UNIQUE INDEX IF NOT EXISTS ux_sms_messages_dpt
   ON sms_messages (date, phone, text);
+
+CREATE INDEX IF NOT EXISTS ix_sms_messages_channel_insertdate
+  ON sms_messages (channel_id, insertdate);
 
 CREATE TABLE IF NOT EXISTS sim_info (
     id           BIGSERIAL PRIMARY KEY,
