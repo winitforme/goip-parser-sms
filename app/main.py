@@ -49,6 +49,7 @@ while True:
             sim_name = vars.get_port_names(i)
             channel_id = i + 1 
             sim_info = sim_info_map.get(channel_id)
+            sim_phone = sim_info.get("phone")
 
             for message in ch_line_messages:
 
@@ -59,12 +60,12 @@ while True:
                     continue
 
                 if Database.write(message, new_is_sent_http=False, new_is_sent_email=False):  
-                    logging.warning(f"📩 New SMS message for channel {sim_name} from {message['from']}")
+                    logging.warning(f"📩 New SMS message for channel {sim_name} from {message['from']}/phone {sim_phone}")
                     
                     is_send = Https.send(message, sim_name, sim_info)
                     if is_send:
                         Database.write(message, new_is_sent_http=True)
-                        logging.warning(f"📤 SMS callback for channel {sim_name} from {message['from']} was successfully send")
+                        logging.warning(f"📤 SMS callback for channel {sim_name} from {message['from']}/phone {sim_phone} was successfully send")
 
                     try:
                         if Email.send(message, sim_name, sim_info):
