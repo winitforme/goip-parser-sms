@@ -25,7 +25,7 @@ class GoipGateway:
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            logging.error(f"❌ Ошибка при подключении к GoIP ({self.goip_addr}): {e}")
+            logging.error(f"❌ Error connecting to GoIP ({self.goip_addr}): {e}")
             return []
 
         try:
