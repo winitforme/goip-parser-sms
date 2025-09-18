@@ -32,8 +32,11 @@ while True:
 
     if now - last_loader_run >= 300:
         last_loader_run = now
-        path, n = loader.run()
-        logging.info(f"Saved: {path}, rows parsed: {n}")
+        try:
+            path, n = loader.run()
+            logging.info(f"Saved: {path}, rows parsed: {n}")
+        except Exception:
+            logging.exception("[Sim Info] failed to update sim info")
 
     if now - last_cleanup > 86400:
         last_cleanup = now
