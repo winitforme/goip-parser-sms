@@ -51,7 +51,7 @@ class HttpsSender:
 
         signature = self.calculate_mobile_api_simbank_signature(payload, self.salt)
 
-        payload['signature'] = signature
+        headers['signature'] = signature
 
         try:
             response = requests.post(self.url, headers=headers, json=payload, timeout=15)
