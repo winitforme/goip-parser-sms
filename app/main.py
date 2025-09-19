@@ -1,4 +1,5 @@
 import time
+import schedule
 import logging, json
 from time import sleep
 from datetime import datetime, timedelta
@@ -24,11 +25,28 @@ next_stats_at = time.time()
 logging.basicConfig(level=vars.loglevel, format="%(asctime)s %(levelname)s: %(message)s")
 logging.warning(f"🟢 [{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] running for {vars.goip_location}...")
 
+def log_status():
+    try:
+        counts = Database.get_sms_counts_by_channel_last_hour()
+
+        if not counts:
+            logging.warning("[SMS hourly] last hour total SMS: 0")
+        else:
+            total = sum(counts.values())
+            logging.warning("[SMS hourly] last hour totals SMS: %d", total)
+    except Exception:
+        logging.exception("[SMS hourly] failed to get stats")
+
+schedule.every().hour.at(":00").do(log_status) # Run at the top of every hour
+
 while True:
 
     now = time.time()
     now_dt = datetime.now()
-    tomorrow = (now_dt + timedelta(days=1)).timestamp()
+    tomorrow_dt = now_dt.replace(hour=8, minute=0, second=0, microsecond=0)
+    tomorrow = (tomorrow_dt + timedelta(days=1)).timestamp()
+
+    schedule.run_pending()
 
     if now - last_loader_run >= 300:
         last_loader_run = now

@@ -146,6 +146,18 @@ class DbWriter:
         """, ('24 hours',))
         rows = cur.fetchall()
         return {row[0]: row[1] for row in rows}
+    
+    def get_sms_counts_by_channel_last_hour(self) -> Dict[int, int]:
+        cur = self.conn.cursor()
+        cur.execute("""
+            SELECT channel_id, COUNT(*) AS cnt
+            FROM sms_messages
+            WHERE insertdate >= now() - interval %s
+            GROUP BY channel_id
+            ORDER BY channel_id
+        """, ('1 hour',))
+        rows = cur.fetchall()
+        return {row[0]: row[1] for row in rows}
 
     def _ensure_sim_info_schema(self):
         cur = self.conn.cursor()
