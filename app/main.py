@@ -109,8 +109,9 @@ while True:
                         logging.warning(f"📤 SMS callback for channel {sim_name} from {message['from']}/phone {sim_phone} was successfully send")
 
                     try:
-                        if Email.send(message, sim_name, sim_info):
-                            Database.write(message, new_is_sent_email=True, channel_id=channel_id)
+                        if not Database.check_if_email_was_send(message=message):
+                            if Email.send(message, sim_name, sim_info):
+                                Database.write(message, new_is_sent_email=True, channel_id=channel_id)
                     except Exception as e:
                         logging.warning(f"❌ Email send error: {e}")
 

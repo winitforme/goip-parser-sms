@@ -105,6 +105,20 @@ class DbWriter:
                 pass
             logging.error(f"❌ Error cleaning old messages: {e}")
             return 0
+        
+    def check_if_email_was_send(self, message) -> bool:
+        cur = self.conn.cursor()
+        cur.execute("""
+            SELECT EXISTS (
+                SELECT 1
+                FROM sms_messages
+                WHERE date = %s
+                AND phone = %s
+                AND text = %s
+                AND is_sent_email = TRUE
+            )
+        """, (message['date'], message['from'], message['text']))
+        return cur.fetchone()[0]
     
     def write(self, message, new_is_sent_http: bool = False, new_is_sent_email: bool = False, channel_id: int = 0) -> bool:
         try:
