@@ -14,16 +14,8 @@ class HttpsSender:
         self.goip_location = location
         self.salt = salt
 
-    def calculate_mobile_api_simbank_signature(self, payload: dict, key: str) -> str:
-
-        body_str = json.dumps(payload, separators=(',', ':'), ensure_ascii=False)
-        body_bytes = body_str.encode("utf-8")
-        key_bytes = key.encode("utf-8")
-
-        # HMAC-SHA512
-        h = hmac.new(key_bytes, body_bytes, hashlib.sha512)
-
-        return base64.b64encode(h.digest()).decode("utf-8")
+    def _hmac512_b64(self, body_bytes: bytes, key: str) -> str:
+        return base64.b64encode(hmac.new(key.encode('utf-8'), body_bytes, hashlib.sha512).digest()).decode('utf-8')
 
     def send(self, message: dict, sim: str, sim_info: Optional[dict] = None):
 
@@ -49,12 +41,13 @@ class HttpsSender:
                 "last_digits":  sim_info.get("last_digits"),
             }
 
-        signature = self.calculate_mobile_api_simbank_signature(payload, self.salt)
+        body_str = json.dumps(payload, separators=(',', ':'), ensure_ascii=False, sort_keys=True)
+        body_bytes = body_str.encode('utf-8')
 
-        headers['signature'] = signature
+        headers['signature'] = self._hmac512_b64(body_bytes, self.salt)
 
         try:
-            response = requests.post(self.url, headers=headers, json=payload, timeout=15)
+            response = requests.post(self.url, headers=headers, data=body_bytes, timeout=15)
             if response.status_code == 200:
                 logging.info(f"✅ Message '{message.get('text')}' forwarded from SIM {sim} to {self.url}")
                 return True
