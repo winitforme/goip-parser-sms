@@ -1,5 +1,6 @@
 # https_sender/https_sender.py
 import requests
+from requests_to_curl import curlify
 import logging
 import hmac
 import hashlib
@@ -48,6 +49,7 @@ class HttpsSender:
 
         try:
             response = requests.post(self.url, headers=headers, data=body_bytes, timeout=15)
+            logging.debug(curlify(response.request))
             if response.status_code == 200:
                 logging.info(f"✅ Message '{message.get('text')}' forwarded from SIM {sim} to {self.url}")
                 return True

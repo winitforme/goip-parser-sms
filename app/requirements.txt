@@ -7,3 +7,4 @@ urllib3==1.26.15
 pandas==2.2.2
 openpyxl==3.1.2
 schedule==1.1.0
+requests-to-curl 1.1.0
