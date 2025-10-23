@@ -1,6 +1,6 @@
 # https_sender/https_sender.py
 import requests
-from requests_to_curl import curlify
+from requests_to_curl.core import curlify
 import logging
 import hmac
 import hashlib
